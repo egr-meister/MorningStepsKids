@@ -173,7 +173,7 @@ For PKCS12, the key password is the same as the store password.
    - Runs `jarsigner -verify`, which must report "jar verified" with no unsigned entries.
    - A self-signed upload certificate is accepted; only integrity and signer identity matter.
    - Uses `keytool -printcert -jarfile` to confirm the signer SHA-256 matches the keystore and isn't `CN=Android Debug`.
-7. Checks permissions. `aapt2 dump permissions` on the release APK, plus the merged release manifest, must declare no permissions.
+7. Checks permissions with `aapt2 dump permissions` on the release APK and on the merged release manifest. The only allowed entry is `com.morningsteps.kids.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, which androidx.core always adds. It is a signature-level permission that the app defines for itself: no other app gets it and the user is never asked for it. `INTERNET`, `ACCESS_NETWORK_STATE` and any other permission fail the build.
 8. Inspects native libraries in the APK and AAB. If `.so` files ever appear, it checks `zipalign -P 16` and ELF `LOAD` alignment (16 KB or more).
 9. Uploads the verified APK, AAB, certificate printouts, permission report and native-library report.
 10. Deletes the decoded keystore (`if: always()`).

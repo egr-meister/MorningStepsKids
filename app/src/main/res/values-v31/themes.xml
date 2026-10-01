@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.MorningSteps" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/ivory</item>
+    </style>
+
+    <style name="Theme.MorningSteps.Starting" parent="Theme.MorningSteps">
+        <item name="android:windowSplashScreenBackground">@color/ivory</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+    </style>
+</resources>

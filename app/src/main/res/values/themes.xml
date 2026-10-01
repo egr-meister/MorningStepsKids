@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Main theme. Compose draws all UI; this only provides window defaults. -->
+    <style name="Theme.MorningSteps" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/ivory</item>
+    </style>
+
+    <!-- Launch theme: shown only while the process starts; no artificial delay. -->
+    <style name="Theme.MorningSteps.Starting" parent="Theme.MorningSteps">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+</resources>

@@ -134,16 +134,27 @@ jobs:
         run: |
           APK=app/build/outputs/apk/release/app-release.apk
           "$BT/aapt2" dump permissions "$APK" | tee permissions.txt
-          if grep -E "uses-permission" permissions.txt; then
-            echo "::error::Release APK declares permissions; none are expected"; exit 1
+          # androidx.core always adds <app id>.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: a signature-level
+          # permission the app defines for itself (protects non-exported receivers below API 33).
+          # It is never granted to other apps and never shown to the user, so it is the only allowed entry.
+          UNEXPECTED=$(grep -E "uses-permission" permissions.txt | grep -v "DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" || true)
+          if [ -n "$UNEXPECTED" ]; then
+            echo "$UNEXPECTED"
+            echo "::error::Release APK requests unexpected permissions"; exit 1
+          fi
+          if grep -qE "android.permission.(INTERNET|ACCESS_NETWORK_STATE)" permissions.txt; then
+            echo "::error::Network permission found"; exit 1
           fi
           MERGED=$(find app/build/intermediates -path "*release*" -name AndroidManifest.xml | grep -i merged | head -n 1)
           echo "Merged manifest: $MERGED"
-          if [ -n "$MERGED" ] && grep -q "<uses-permission" "$MERGED"; then
-            grep "<uses-permission" "$MERGED"
-            echo "::error::Merged release manifest declares permissions"; exit 1
+          if [ -n "$MERGED" ]; then
+            M_UNEXPECTED=$(grep "<uses-permission" "$MERGED" | grep -v "DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" || true)
+            if [ -n "$M_UNEXPECTED" ]; then
+              echo "$M_UNEXPECTED"
+              echo "::error::Merged release manifest requests unexpected permissions"; exit 1
+            fi
           fi
-          echo "No permissions declared." >> permissions.txt
+          echo "Result: no runtime, network or other platform permissions; only the app's own signature-level DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION (added by androidx.core)." >> permissions.txt
 
       - name: Inspect native libraries (16 KB page size)
         run: |

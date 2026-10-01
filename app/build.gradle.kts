@@ -114,12 +114,19 @@ room {
 }
 
 // Fail fast: release packaging must never run without the real release keystore.
-val releaseTaskPrefixes = listOf("assembleRelease", "bundleRelease", "packageRelease", "signRelease", "installRelease")
+// Exact task names only: lintRelease, testReleaseUnitTest, packageReleaseResources etc. do not need signing.
+val releaseSigningTasks = setOf(
+    "assembleRelease",
+    "bundleRelease",
+    "packageRelease",
+    "packageReleaseBundle",
+    "signReleaseBundle",
+    "validateSigningRelease",
+    "installRelease",
+)
 gradle.taskGraph.whenReady {
-    val needsRelease = allTasks.any { task ->
-        task.project == project && releaseTaskPrefixes.any { task.name.startsWith(it) }
-    }
-    if (needsRelease && !releaseSigningComplete) {
+    val needsSigning = allTasks.any { task -> task.project == project && task.name in releaseSigningTasks }
+    if (needsSigning && !releaseSigningComplete) {
         throw GradleException(
             "Release signing credentials are missing. Provide ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_PASSWORD, " +
                 "ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD (or keystore.properties). Debug signing is never used for release."
